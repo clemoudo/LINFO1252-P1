@@ -1,23 +1,21 @@
-CC ?= gcc
-CFLAGS ?= -Wall -Wextra -g -std=c11 -Iinclude
+CC = gcc
+CFLAGS = -Wall -Wextra -O0 -pthread -Iinclude
 
-SRC_DIR = src
-BIN_DIR = bin
-INCLUDE_DIR = include
+SRCS = $(wildcard src/*.c)
+BINS = $(patsubst src/%.c,bin/%,$(SRCS))
 
-# Liste des exécutables à générer (ex: main -> bin/main)
-# Par défaut, compile src/main.c -> bin/main
-TARGETS = $(BIN_DIR)/main
+all: $(BINS)
 
-all: $(BIN_DIR) $(TARGETS)
-
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-$(BIN_DIR)/%: $(SRC_DIR)/%.c | $(BIN_DIR)
+bin/%: src/%.c | bin
 	$(CC) $(CFLAGS) $< -o $@
 
-clean:
-	rm -rf $(BIN_DIR)
+bin:
+	mkdir -p bin
 
-.PHONY: all clean
+test: all
+	./bin/philosophes 2
+
+clean:
+	rm -rf bin
+
+.PHONY: all clean test
