@@ -1,0 +1,12 @@
+# Binaires compilés et objets
+bin/
+*.o
+
+# CMake et IDE (CLion)
+cmake-build-*/
+.idea/
+.vscode/
+
+# Fichiers temporaires ou logs
+*.tmp
+*.log
