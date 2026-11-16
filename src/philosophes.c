@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define CYCLES 1000000
+#define CYCLES 1000000 // 1 000 000
 
 typedef struct {
     int id;

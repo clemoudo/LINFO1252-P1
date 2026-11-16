@@ -10,3 +10,6 @@ cmake-build-*/
 # Fichiers temporaires ou logs
 *.tmp
 *.log
+
+# Autres
+skills/
