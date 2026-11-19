@@ -3,6 +3,7 @@
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <utils.h>
 
 #define TAILLE 8
 #define TOTAL 131072
@@ -83,12 +84,6 @@ static int lire_entier(const char *texte, int *resultat) {
     return 0;
 }
 
-// Nombre d'éléments que doit traiter le thread numéro i parmi nb_threads :
-// TOTAL est partagé équitablement, et le thread 0 récupère le reste de la division.
-static int part(int i, int nb_threads) {
-    return TOTAL / nb_threads + (i == 0 ? TOTAL % nb_threads : 0);
-}
-
 // Lit le nombre de producteurs et de consommateurs, initialise le mutex et les sémaphores,
 // lance tous les threads, attend qu'ils aient fini, puis libère les ressources.
 int main(int argc, char **argv) {
@@ -120,7 +115,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < nb_prod; i++) {
         args_prod[i].id = i;
-        args_prod[i].nb = part(i, nb_prod);
+        args_prod[i].nb = part(i, nb_prod, TOTAL);
 
         err = pthread_create(&prod[i], NULL, producteur, &args_prod[i]);
         if (err != 0) {
@@ -131,7 +126,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < nb_cons; i++) {
         args_cons[i].id = i;
-        args_cons[i].nb = part(i, nb_cons);
+        args_cons[i].nb = part(i, nb_cons, TOTAL);
 
         err = pthread_create(&cons[i], NULL, consommateur, &args_cons[i]);
         if (err != 0) {
