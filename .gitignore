@@ -7,6 +7,9 @@ cmake-build-*/
 .idea/
 .vscode/
 
+# Données de mesure
+data/
+
 # Fichiers temporaires ou logs
 *.tmp
 *.log
