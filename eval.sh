@@ -6,20 +6,20 @@ set -euo pipefail
 # --- Configuration et constantes ---
 CONFIGS=(2 4 8 16 32)
 REPETITIONS=5
-TIME_BIN="/usr/bin/time"
-OUTPUT_DIR="data"
+TARGET="${1:-all}"
 
-# Vérification de l'existence de /usr/bin/time
-if [ ! -x "$TIME_BIN" ]; then
-    echo "Erreur: $TIME_BIN est introuvable."
+# Localiser le binaire time
+if [ -x "/usr/bin/time" ]; then
+    TIME_BIN="/usr/bin/time"
+elif command -v time >/dev/null 2>&1; then
+    TIME_BIN="$(which time)"
+else
+    echo "Erreur: commande 'time' externe introuvable."
     exit 1
 fi
 
-# Compilation préalable des binaires
-make -s all
-
-# Création du dossier pour les fichiers CSV
-mkdir -p "$OUTPUT_DIR"
+# Compilation préalable (redirection vers STDERR pour garder STDOUT propre)
+make -s all >&2
 
 # Fichier temporaire pour récupérer la mesure de time
 TMP_TIME=$(mktemp)
@@ -28,14 +28,14 @@ trap 'rm -f "$TMP_TIME"' EXIT
 # --- Fonction de benchmark pour un programme ---
 benchmark() {
     local prog="$1"
-    local output_csv="$OUTPUT_DIR/$prog.csv"
 
-    echo "threads,run1,run2,run3,run4,run5" > "$output_csv"
+    # Balise de début de section pour les scripts de parsing
+    echo "=== $prog ==="
+    echo "threads,run1,run2,run3,run4,run5"
 
     for total_threads in "${CONFIGS[@]}"; do
         local line="$total_threads"
 
-        # Préparation de la commande selon le type de programme
         local cmd=()
         if [ "$prog" = "philosophes" ]; then
             cmd=("./bin/$prog" "$total_threads")
@@ -45,18 +45,35 @@ benchmark() {
         fi
 
         for ((run = 0; run < REPETITIONS; run++)); do
-            # Exécution avec redirection de STDOUT et STDERR vers /dev/null
+            # Exécution avec redirection de STDOUT et STDERR du binaire vers /dev/null
             $TIME_BIN -f "%e" -o "$TMP_TIME" "${cmd[@]}" >/dev/null 2>&1
             local measure
             measure=$(cat "$TMP_TIME")
             line="$line,$measure"
         done
 
-        echo "$line" >> "$output_csv"
+        echo "$line"
     done
 }
 
-# --- Lancement des benchmarks pour les 3 programmes ---
-benchmark "philosophes"
-benchmark "prodcons"
-benchmark "read-write"
+# --- Lancement du ou des benchmarks selon l'argument ---
+case "$TARGET" in
+    philosophes)
+        benchmark "philosophes"
+        ;;
+    prodcons)
+        benchmark "prodcons"
+        ;;
+    read-write)
+        benchmark "read-write"
+        ;;
+    all)
+        benchmark "philosophes"
+        benchmark "prodcons"
+        benchmark "read-write"
+        ;;
+    *)
+        echo "Usage: $0 [philosophes|prodcons|read-write|all]" >&2
+        exit 1
+        ;;
+esac
