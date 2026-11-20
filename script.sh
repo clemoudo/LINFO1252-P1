@@ -4,26 +4,59 @@
 set -euo pipefail
 
 # --- Configuration et constantes ---
-MAX_THREADS=8
+CONFIGS=(2 4 8 16 32)
 REPETITIONS=5
 TIME_BIN="/usr/bin/time"
+OUTPUT_DIR="data"
 
-# Fichier temporaire pour récupérer la sortie de time sans écraser STDERR de make
+# Vérification de l'existence de /usr/bin/time
+if [ ! -x "$TIME_BIN" ]; then
+    echo "Erreur: $TIME_BIN est introuvable."
+    exit 1
+fi
+
+# Compilation préalable des binaires
+make -s all
+
+# Création du dossier pour les fichiers CSV
+mkdir -p "$OUTPUT_DIR"
+
+# Fichier temporaire pour récupérer la mesure de time
 TMP_TIME=$(mktemp)
 trap 'rm -f "$TMP_TIME"' EXIT
 
-# --- En-tête du tableau CSV sur STDOUT ---
-echo "threads,run1,run2,run3,run4,run5"
+# --- Fonction de benchmark pour un programme ---
+benchmark() {
+    local prog="$1"
+    local output_csv="$OUTPUT_DIR/$prog.csv"
 
-for ((threads = 1; threads <= MAX_THREADS; threads *= 2)); do
-    line="$threads"
+    echo "threads,run1,run2,run3,run4,run5" > "$output_csv"
 
-    for ((run = 1; run <= REPETITIONS; run++)); do
-        make -s clean >/dev/null 2>&1
-        $TIME_BIN -f "%e" -o "$TMP_TIME" make -s -j "$threads" 2>/dev/null
-        measure=$(cat "$TMP_TIME")
-        line="$line,$measure"
+    for total_threads in "${CONFIGS[@]}"; do
+        local line="$total_threads"
+
+        # Préparation de la commande selon le type de programme
+        local cmd=()
+        if [ "$prog" = "philosophes" ]; then
+            cmd=("./bin/$prog" "$total_threads")
+        else
+            local half=$((total_threads / 2))
+            cmd=("./bin/$prog" "$half" "$half")
+        fi
+
+        for ((run = 0; run < REPETITIONS; run++)); do
+            # Exécution avec redirection de STDOUT et STDERR vers /dev/null
+            $TIME_BIN -f "%e" -o "$TMP_TIME" "${cmd[@]}" >/dev/null 2>&1
+            local measure
+            measure=$(cat "$TMP_TIME")
+            line="$line,$measure"
+        done
+
+        echo "$line" >> "$output_csv"
     done
+}
 
-    echo "$line"
-done
+# --- Lancement des benchmarks pour les 3 programmes ---
+benchmark "philosophes"
+benchmark "prodcons"
+benchmark "read-write"
