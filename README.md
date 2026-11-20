@@ -75,16 +75,22 @@ Vérifie la bonne exécution des 3 binaires avec une configuration minimale :
 make test
 ```
 
-### 3. Nettoyage
-Supprime le dossier des binaires `bin/` :
+### 3. Exécution des benchmarks (local)
+Compile automatiquement si besoin, exécute les mesures et enregistre les CSV dans `data/` :
 ```bash
-make clean
+# Lance le benchmark complet (les 3 programmes) :
+make benchmark
+
+# Ou pour un seul programme :
+make benchmark TARGET=philosophes
+make benchmark TARGET=producer_consumer
+make benchmark TARGET=reader_writer
 ```
 
 ### 4. Génération des graphiques
 Trace les graphiques conformes aux consignes (axe Y commençant à 0, moyenne avec barres d'erreur représentant l'écart-type) :
 ```bash
-# Génère les graphiques pour le dossier studsrv le plus récent :
+# Génère les graphiques pour le dossier studsrv le plus récent (ou data/) :
 make plot
 
 # Ou pour cibler un dossier de données spécifique :
@@ -93,7 +99,13 @@ make plot DATA=data
 ```
 Les graphes sont générés aux formats vectoriel `.pdf` (pour le rapport) et image `.png` (résolution 300 DPI) dans le dossier `graphes/`.
 
-### 5. Préparation de l'archive pour INGInious
+### 5. Nettoyage
+Supprime le dossier des binaires `bin/` :
+```bash
+make clean
+```
+
+### 6. Préparation de l'archive pour INGInious
 Génère une archive `projet1.zip` propre et conforme aux exigences d'INGInious :
 ```bash
 make zip
@@ -106,15 +118,11 @@ make zip
 Les configurations mesurées pour chaque programme correspondent aux nombres de threads totaux suivants : `[2, 4, 8, 16, 32]`, avec **5 répétitions** par configuration.
 
 ### En local
-Pour lancer l'évaluation et enregistrer automatiquement les fichiers CSV dans `data/` :
+Le moyen le plus simple est d'utiliser le `Makefile` :
 ```bash
-./src/part1/benchmark_part1.sh | ./save_data.sh
+make benchmark
 ```
-
-Pour évaluer un programme particulier :
-```bash
-./src/part1/benchmark_part1.sh philosophes | ./save_data.sh
-```
+*(Équivalent direct à : `./src/part1/benchmark_part1.sh | ./save_data.sh`)*
 
 ### Sur la machine dédiée (`studsrv`) via INGInious
 1. Générez l'archive avec `make zip`.
@@ -123,7 +131,7 @@ Pour évaluer un programme particulier :
 4. Récupérez le texte du feedback et enregistrez-le dans un dossier horodaté :
    ```bash
    ./save_data.sh --studsrv < feedback_studsrv.txt
-   # ou directement via un pipe :
+   # ou directement en collant dans le terminal :
    ./save_data.sh --studsrv
    ```
 5. Générez les courbes d'analyse associées :

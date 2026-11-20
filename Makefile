@@ -8,6 +8,9 @@ PYTHON ?= $(shell if [ -f .venv/bin/python3 ]; then echo .venv/bin/python3; else
 LATEST_STUDSRV = $(shell ls -td data/studsrv_* 2>/dev/null | head -n 1)
 DATA ?= $(if $(LATEST_STUDSRV),$(LATEST_STUDSRV),data)
 
+# Cible pour le benchmark (par défaut: all)
+TARGET ?= all
+
 # Sources et binaires Partie 1
 SRCS_P1 = $(wildcard src/part1/*.c)
 BINS_P1 = $(patsubst src/part1/%.c,bin/%,$(SRCS_P1))
@@ -25,6 +28,9 @@ test: all
 	./bin/producer_consumer 2 2
 	./bin/reader_writer 2 2
 
+benchmark: all
+	./src/part1/benchmark_part1.sh $(TARGET) | ./save_data.sh
+
 plot:
 	$(PYTHON) graphes/generate_plot.py $(DATA)
 
@@ -34,4 +40,4 @@ clean:
 zip: clean
 	zip -r projet1.zip Makefile experiments.sh src
 
-.PHONY: all clean test zip plot
+.PHONY: all clean test benchmark plot clean zip

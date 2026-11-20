@@ -15,9 +15,10 @@ __pycache__/
 data/*
 !data/studsrv*/
 
-# Graphiques (on ignore tout sauf studsrv)
+# Graphiques (on ignore tout sauf le script et les dossiers studsrv)
 graphes/*
 !graphes/generate_plot.py
+!graphes/studsrv*/
 plots/
 
 # Fichiers temporaires ou logs
