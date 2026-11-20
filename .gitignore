@@ -11,8 +11,9 @@ cmake-build-*/
 .venv/
 __pycache__/
 
-# Données de mesure (on ignore tout sauf studsrv)
+# Données de mesure (on ignore tout sauf le script et les dossiers studsrv)
 data/*
+!data/save_data.sh
 !data/studsrv*/
 
 # Graphiques (on ignore tout sauf le script et les dossiers studsrv)
