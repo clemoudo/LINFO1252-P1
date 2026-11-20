@@ -20,4 +20,7 @@ test: all
 clean:
 	rm -rf bin
 
+zip: clean
+	zip -r projet1.zip Makefile experiments.sh eval.sh src include
+
 .PHONY: all clean test

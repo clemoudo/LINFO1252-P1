@@ -18,6 +18,9 @@ plots/
 *.tmp
 *.log
 
+# Archive zip
+projet1.zip
+
 # Autres
 skills/
 utilisation_ia.md
