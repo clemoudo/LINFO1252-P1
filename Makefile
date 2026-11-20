@@ -15,6 +15,7 @@ bin:
 test: all
 	./bin/philosophes 2
 	./bin/prodcons 2 2
+	./bin/read-write 2 2
 
 clean:
 	rm -rf bin

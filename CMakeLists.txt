@@ -8,8 +8,6 @@ include_directories(include)
 # Sortie des binaires dans bin/
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_executable(P1_read_write
-        src/philosophes.c
-        src/prodcons.c
-        src/read-write.c
-        include/utils.h)
+add_executable(philosophes src/philosophes.c)
+add_executable(prodcons src/prodcons.c)
+add_executable(read-write src/read-write.c)
