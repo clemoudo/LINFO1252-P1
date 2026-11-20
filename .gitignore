@@ -7,8 +7,12 @@ cmake-build-*/
 .idea/
 .vscode/
 
+# Environnement Python virtuel
+.venv/
+
 # Données de mesure
 data/
+plots/
 
 # Fichiers temporaires ou logs
 *.tmp
