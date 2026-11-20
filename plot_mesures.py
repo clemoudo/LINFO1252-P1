@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+"""
+Script de post-traitement et de représentation graphique des performances (LINFO1252 - Tâche 1.5).
+Génère les graphiques d'évaluation des performances pour :
+  - Le problème des philosophes
+  - Le problème des producteurs-consommateurs
+  - Le problème des lecteurs-écrivains
+
+Utilisation :
+  ./plot_mesures.py                                     # Lit dans 'data/' et écrit dans 'plots/'
+  ./plot_mesures.py data/studsrv_2026-11-20_11-37       # Lit dans le dossier spécifié
+  ./plot_mesures.py data/mon_dossier plots/mes_graphes  # Dossier d'entrée et dossier de sortie
+  ./plot_mesures.py data/philosophes.csv                # Pour un fichier CSV individuel
+"""
 
 import os
 import sys
@@ -9,7 +22,7 @@ import matplotlib.pyplot as plt
 # Configuration des métadonnées pour chaque programme
 BENCHMARKS = {
     "philosophes": {
-        "csv": "data/philosophes.csv",
+        "filename": "philosophes.csv",
         "title": "Problème des philosophes (1 000 000 cycles)",
         "xlabel": "Nombre de philosophes (threads)",
         "output_prefix": "philosophes",
@@ -17,7 +30,7 @@ BENCHMARKS = {
         "ecolor": "#d62728", # Rouge
     },
     "prodcons": {
-        "csv": "data/prodcons.csv",
+        "filename": "prodcons.csv",
         "title": "Problème des producteurs-consommateurs (131 072 éléments)",
         "xlabel": "Nombre total de threads (N/2 producteurs, N/2 consommateurs)",
         "output_prefix": "prodcons",
@@ -25,7 +38,7 @@ BENCHMARKS = {
         "ecolor": "#d62728", # Rouge
     },
     "read-write": {
-        "csv": "data/read-write.csv",
+        "filename": "read-write.csv",
         "title": "Problème des lecteurs-écrivains (6 400 écritures, 25 400 lectures)",
         "xlabel": "Nombre total de threads (N/2 écrivains, N/2 lecteurs)",
         "output_prefix": "read-write",
@@ -69,9 +82,8 @@ def load_csv(csv_path):
     return threads, means, stds, all_runs
 
 
-def plot_benchmark(key, config, output_dir="plots"):
+def plot_benchmark(key, config, csv_path, output_dir="plots"):
     """Génère et sauvegarde le graphique pour un benchmark donné."""
-    csv_path = config["csv"]
     data = load_csv(csv_path)
 
     if data is None:
@@ -138,33 +150,49 @@ def plot_benchmark(key, config, output_dir="plots"):
 
 
 def main():
-    output_dir = "plots"
+    arg1 = sys.argv[1] if len(sys.argv) > 1 else "data"
+    arg2 = sys.argv[2] if len(sys.argv) > 2 else None
 
-    # Si un fichier CSV spécifique est passé en argument
-    if len(sys.argv) > 1:
-        target_csv = sys.argv[1]
+    # CAS 1 : L'argument est un fichier CSV individuel
+    if os.path.isfile(arg1) or arg1.endswith(".csv"):
+        target_csv = arg1
         name = os.path.splitext(os.path.basename(target_csv))[0]
+        output_dir = arg2 if arg2 else "plots"
 
         config = BENCHMARKS.get(name, {
-            "csv": target_csv,
+            "filename": os.path.basename(target_csv),
             "title": f"Évaluation des performances - {name}",
             "xlabel": "Nombre total de threads",
             "output_prefix": name,
             "color": "#1f77b4",
             "ecolor": "#d62728",
         })
-        config["csv"] = target_csv
-        plot_benchmark(name, config, output_dir=output_dir)
+        plot_benchmark(name, config, target_csv, output_dir=output_dir)
         return
 
-    # Sinon, on traite l'ensemble des 3 benchmarks de la tâche 1.5
+    # CAS 2 : L'argument est un dossier (ou le dossier par défaut 'data')
+    data_dir = arg1
+
+    # Détermination du dossier de sortie des graphiques
+    if arg2:
+        output_dir = arg2
+    else:
+        folder_name = os.path.basename(data_dir.rstrip("/\\"))
+        if folder_name and folder_name != "data":
+            output_dir = os.path.join("plots", folder_name)
+        else:
+            output_dir = "plots"
+
     print("======================================================")
     print(" Génération des graphiques de performance (Tâche 1.5)")
+    print(f" Dossier source CSV : '{data_dir}'")
+    print(f" Dossier de sortie   : '{output_dir}'")
     print("======================================================")
 
     generated = 0
     for key, config in BENCHMARKS.items():
-        if plot_benchmark(key, config, output_dir=output_dir):
+        csv_file = os.path.join(data_dir, config["filename"])
+        if plot_benchmark(key, config, csv_file, output_dir=output_dir):
             generated += 1
 
     print("\n======================================================")

@@ -10,16 +10,15 @@ cmake-build-*/
 # Environnement Python virtuel
 .venv/
 
-# Données de mesure
-data/
+# Données de mesure (on ignore le contenu de data/ sauf les résultats studsrv)
+data/*
+!data/studsrv*/
 plots/
 
 # Fichiers temporaires ou logs
 *.tmp
 *.log
-
-# Archive zip
-projet1.zip
+feedback*.txt
 
 # Autres
 skills/

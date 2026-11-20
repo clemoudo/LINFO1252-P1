@@ -4,11 +4,31 @@
 #
 # Utilisation :
 #   ./eval.sh | ./save_data.sh
-#   ./save_data.sh < feedback_studsrv.txt
+#   ./save_data.sh --studsrv < feedback_studsrv.txt
+#   ./save_data.sh --timestamp [prefix] < feedback.txt
+#   ./save_data.sh dossier_personnalise < feedback.txt
 
 set -euo pipefail
 
-OUTPUT_DIR="${1:-data}"
+TIMESTAMP="$(date +'%Y-%m-%d_%H-%M')"
+
+# Gestion des paramètres de destination
+case "${1:-}" in
+    --studsrv|-s|studsrv)
+        OUTPUT_DIR="data/studsrv_${TIMESTAMP}"
+        ;;
+    --timestamp|-t|timestamp)
+        PREFIX="${2:-run}"
+        OUTPUT_DIR="data/${PREFIX}_${TIMESTAMP}"
+        ;;
+    "")
+        OUTPUT_DIR="data"
+        ;;
+    *)
+        OUTPUT_DIR="$1"
+        ;;
+esac
+
 mkdir -p "$OUTPUT_DIR"
 
 current_file=""
