@@ -11,6 +11,9 @@ DATA ?= $(if $(LATEST_STUDSRV),$(LATEST_STUDSRV),data)
 # Cible pour le benchmark (par défaut: all)
 TARGET ?= all
 
+# Fichier de feedback par défaut
+FEEDBACK ?= feedback_studsrv.txt
+
 # Sources et binaires Partie 1
 SRCS_P1 = $(wildcard src/part1/*.c)
 BINS_P1 = $(patsubst src/part1/%.c,bin/%,$(SRCS_P1))
@@ -29,7 +32,15 @@ test: all
 	./bin/reader_writer 2 2
 
 benchmark: all
-	./src/part1/benchmark_part1.sh $(TARGET) | ./save_data.sh
+	./src/part1/benchmark_part1.sh $(TARGET) | ./data/save_data.sh
+
+save-studsrv:
+	@if [ -f "$(FEEDBACK)" ]; then \
+		./data/save_data.sh --studsrv < "$(FEEDBACK)"; \
+	else \
+		echo "Collez le feedback studsrv ci-dessous (terminez avec Ctrl+D) :"; \
+		./data/save_data.sh --studsrv; \
+	fi
 
 plot:
 	$(PYTHON) graphes/generate_plot.py $(DATA)
@@ -40,4 +51,4 @@ clean:
 zip: clean
 	zip -r projet1.zip Makefile experiments.sh src
 
-.PHONY: all clean test benchmark plot clean zip
+.PHONY: all clean test benchmark save-studsrv plot clean zip

@@ -3,8 +3,6 @@
 Ce projet s'inscrit dans le cadre du cours **LINFO1252 - Systèmes informatiques** (UCLouvain).  
 L'objectif est d'étudier, implémenter et évaluer les performances d'applications concurrentes exploitant les primitives de synchronisation POSIX (mutex et sémaphores), puis d'analyser l'impact du niveau de parallélisme sur une machine locale et sur une machine serveur dédiée 16 cœurs (`studsrv`).
 
----
-
 ## Structure du projet
 
 Conformément à l'arborescence attendue :
@@ -15,7 +13,8 @@ Conformément à l'arborescence attendue :
 ├── experiments.sh               # Point d'entrée exécuté sur studsrv via INGInious
 ├── README.md                    # Documentation du projet
 ├── Rapport.pdf                  # Rapport d'analyse des résultats (à fournir)
-├── save_data.sh                 # Utilitaire pour parser STDOUT et alimenter data/
+├── data/
+│   └── save_data.sh             # Utilitaire pour parser STDOUT et alimenter data/
 ├── graphes/
 │   └── generate_plot.py         # Génération des graphiques (moyenne ± écart-type, PDF et PNG)
 ├── src/
@@ -24,11 +23,8 @@ Conformément à l'arborescence attendue :
 │       ├── philosophes.c        # Tâche 1.1 : Problème du dîner des philosophes
 │       ├── producer_consumer.c  # Tâche 1.2 : Producteurs-Consommateurs avec buffer borné
 │       └── reader_writer.c      # Tâche 1.3 : Lecteurs-Écrivains (priorité aux écrivains)
-├── data/                        # Fichiers CSV de mesures (ignoré par Git sauf studsrv)
 └── bin/                         # Binaires exécutables générés par make (ignoré par Git)
 ```
-
----
 
 ## Les problèmes implémentés (Partie 1)
 
@@ -50,8 +46,6 @@ Conformément à l'arborescence attendue :
    - Priorité stricte aux écrivains (algorithme de Courtois avec `wsem`, `rsem`, `z`, `writecount` et `readcount`).
    - Volumes d'accès : 6 400 écritures et 25 400 lectures au total.
    - Traitement CPU simulé (`for (int i=0; i<10000; i++);`) **à l'intérieur** de la zone critique.
-
----
 
 ## Commandes principales (`Makefile`)
 
@@ -87,10 +81,23 @@ make benchmark TARGET=producer_consumer
 make benchmark TARGET=reader_writer
 ```
 
-### 4. Génération des graphiques
+### 4. Sauvegarde des résultats studsrv
+Enregistre automatiquement les données de retour du serveur dans un dossier horodaté `data/studsrv_YYYY-MM-DD_HH-MM/` :
+```bash
+# Si vous avez copié le texte dans feedback_studsrv.txt (par défaut) :
+make save-studsrv
+
+# Ou en spécifiant un autre fichier :
+make save-studsrv FEEDBACK=mon_feedback.txt
+
+# Si aucun fichier n'existe, il vous invite à coller le texte directement :
+make save-studsrv
+```
+
+### 5. Génération des graphiques
 Trace les graphiques conformes aux consignes (axe Y commençant à 0, moyenne avec barres d'erreur représentant l'écart-type) :
 ```bash
-# Génère les graphiques pour le dossier studsrv le plus récent (ou data/) :
+# Génère automatiquement les graphiques pour le dossier studsrv le plus récent :
 make plot
 
 # Ou pour cibler un dossier de données spécifique :
@@ -99,42 +106,36 @@ make plot DATA=data
 ```
 Les graphes sont générés aux formats vectoriel `.pdf` (pour le rapport) et image `.png` (résolution 300 DPI) dans le dossier `graphes/`.
 
-### 5. Nettoyage
+### 6. Nettoyage
 Supprime le dossier des binaires `bin/` :
 ```bash
 make clean
 ```
 
-### 6. Préparation de l'archive pour INGInious
+### 7. Préparation de l'archive pour INGInious
 Génère une archive `projet1.zip` propre et conforme aux exigences d'INGInious :
 ```bash
 make zip
 ```
-
----
 
 ## Évaluation des performances
 
 Les configurations mesurées pour chaque programme correspondent aux nombres de threads totaux suivants : `[2, 4, 8, 16, 32]`, avec **5 répétitions** par configuration.
 
 ### En local
-Le moyen le plus simple est d'utiliser le `Makefile` :
 ```bash
 make benchmark
 ```
-*(Équivalent direct à : `./src/part1/benchmark_part1.sh | ./save_data.sh`)*
 
 ### Sur la machine dédiée (`studsrv`) via INGInious
 1. Générez l'archive avec `make zip`.
 2. Soumettez l'archive sur la tâche INGInious correspondante.
-3. Le serveur exécute [`experiments.sh`](file:///home/cvier/UCL/sys-info/Projets/P1-read-write/experiments.sh) et retourne la sortie standard dans le champ de feedback.
-4. Récupérez le texte du feedback et enregistrez-le dans un dossier horodaté :
+3. Copiez le texte de feedback d'INGInious dans le fichier `feedback_studsrv.txt` (ou collez-le directement).
+4. Enregistrez les données en une commande :
    ```bash
-   ./save_data.sh --studsrv < feedback_studsrv.txt
-   # ou directement en collant dans le terminal :
-   ./save_data.sh --studsrv
+   make save-studsrv
    ```
-5. Générez les courbes d'analyse associées :
+5. Tracez immédiatement les graphiques associés :
    ```bash
    make plot
    ```
