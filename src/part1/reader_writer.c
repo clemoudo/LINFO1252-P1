@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <utils.h>
 
 #define TOTAL_WRITES 6400
 #define TOTAL_READS  25400
@@ -22,6 +21,12 @@ sem_t rsem;
 sem_t z;
 int writecount = 0; // nombre de writers
 int readcount = 0; // nombre de readers
+
+// Nombre d'éléments que doit traiter le thread numéro i parmi nb_threads :
+// total est partagé équitablement, et le thread 0 récupère le reste de la division.
+static int part(int i, int nb_threads, int total) {
+    return total / nb_threads + (i == 0 ? total % nb_threads : 0);
+}
 
 void db_access() {
     for (int i = 0; i < TRAITEMENT; i++);

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Script de post-traitement et de représentation graphique des performances (LINFO1252 - Tâche 1.5).
+Script de post-traitement et de représentation graphique des performances (LINFO1252).
 Génère les graphiques d'évaluation des performances pour :
   - Le problème des philosophes
   - Le problème des producteurs-consommateurs
   - Le problème des lecteurs-écrivains
 
 Utilisation :
-  ./plot_mesures.py                                     # Lit dans 'data/' et écrit dans 'plots/'
-  ./plot_mesures.py data/studsrv_2026-11-20_11-37       # Lit dans le dossier spécifié
-  ./plot_mesures.py data/mon_dossier plots/mes_graphes  # Dossier d'entrée et dossier de sortie
-  ./plot_mesures.py data/philosophes.csv                # Pour un fichier CSV individuel
+  python3 graphes/generate_plot.py                                      # Lit dans 'data/' et écrit dans 'graphes/'
+  python3 graphes/generate_plot.py data/studsrv_2026-11-20_11-40        # Lit dans le dossier spécifié
+  python3 graphes/generate_plot.py data/mon_dossier graphes/mes_plots   # Dossier d'entrée et dossier de sortie
+  python3 graphes/generate_plot.py data/philosophes.csv                 # Pour un fichier CSV individuel
 """
 
 import os
@@ -29,19 +29,19 @@ BENCHMARKS = {
         "color": "#1f77b4",  # Bleu
         "ecolor": "#d62728", # Rouge
     },
-    "prodcons": {
-        "filename": "prodcons.csv",
+    "producer_consumer": {
+        "filename": "producer_consumer.csv",
         "title": "Problème des producteurs-consommateurs (131 072 éléments)",
         "xlabel": "Nombre total de threads (N/2 producteurs, N/2 consommateurs)",
-        "output_prefix": "prodcons",
+        "output_prefix": "producer_consumer",
         "color": "#2ca02c",  # Vert
         "ecolor": "#d62728", # Rouge
     },
-    "read-write": {
-        "filename": "read-write.csv",
+    "reader_writer": {
+        "filename": "reader_writer.csv",
         "title": "Problème des lecteurs-écrivains (6 400 écritures, 25 400 lectures)",
         "xlabel": "Nombre total de threads (N/2 écrivains, N/2 lecteurs)",
-        "output_prefix": "read-write",
+        "output_prefix": "reader_writer",
         "color": "#9467bd",  # Violet
         "ecolor": "#d62728", # Rouge
     },
@@ -82,7 +82,7 @@ def load_csv(csv_path):
     return threads, means, stds, all_runs
 
 
-def plot_benchmark(key, config, csv_path, output_dir="plots"):
+def plot_benchmark(key, config, csv_path, output_dir="graphes"):
     """Génère et sauvegarde le graphique pour un benchmark donné."""
     data = load_csv(csv_path)
 
@@ -149,15 +149,25 @@ def plot_benchmark(key, config, csv_path, output_dir="plots"):
     return True
 
 
+def resolve_data_path(path):
+    """Résout le chemin vers data/ que le script soit lancé depuis la racine ou depuis graphes/."""
+    if os.path.exists(path):
+        return path
+    alt = os.path.join("..", path)
+    if os.path.exists(alt):
+        return alt
+    return path
+
+
 def main():
-    arg1 = sys.argv[1] if len(sys.argv) > 1 else "data"
+    arg1 = sys.argv[1] if len(sys.argv) > 1 else resolve_data_path("data")
     arg2 = sys.argv[2] if len(sys.argv) > 2 else None
 
     # CAS 1 : L'argument est un fichier CSV individuel
     if os.path.isfile(arg1) or arg1.endswith(".csv"):
         target_csv = arg1
         name = os.path.splitext(os.path.basename(target_csv))[0]
-        output_dir = arg2 if arg2 else "plots"
+        output_dir = arg2 if arg2 else "graphes"
 
         config = BENCHMARKS.get(name, {
             "filename": os.path.basename(target_csv),
@@ -170,8 +180,8 @@ def main():
         plot_benchmark(name, config, target_csv, output_dir=output_dir)
         return
 
-    # CAS 2 : L'argument est un dossier (ou le dossier par défaut 'data')
-    data_dir = arg1
+    # CAS 2 : L'argument est un dossier
+    data_dir = resolve_data_path(arg1)
 
     # Détermination du dossier de sortie des graphiques
     if arg2:
@@ -179,12 +189,12 @@ def main():
     else:
         folder_name = os.path.basename(data_dir.rstrip("/\\"))
         if folder_name and folder_name != "data":
-            output_dir = os.path.join("plots", folder_name)
+            output_dir = os.path.join("graphes", folder_name)
         else:
-            output_dir = "plots"
+            output_dir = "graphes"
 
     print("======================================================")
-    print(" Génération des graphiques de performance (Tâche 1.5)")
+    print(" Génération des graphiques de performance (LINFO1252)")
     print(f" Dossier source CSV : '{data_dir}'")
     print(f" Dossier de sortie   : '{output_dir}'")
     print("======================================================")

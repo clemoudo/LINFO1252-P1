@@ -9,10 +9,15 @@ cmake-build-*/
 
 # Environnement Python virtuel
 .venv/
+__pycache__/
 
-# Données de mesure (on ignore le contenu de data/ sauf les résultats studsrv)
+# Données de mesure (on ignore tout sauf studsrv)
 data/*
 !data/studsrv*/
+
+# Graphiques (on ignore tout sauf studsrv)
+graphes/*
+!graphes/generate_plot.py
 plots/
 
 # Fichiers temporaires ou logs

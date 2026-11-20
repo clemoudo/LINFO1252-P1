@@ -3,7 +3,6 @@
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utils.h>
 
 #define TAILLE 8
 #define TOTAL 131072
@@ -21,6 +20,12 @@ typedef struct {
     int id;
     int nb;
 } prodcons_arg_t;
+
+// Nombre d'éléments que doit traiter le thread numéro i parmi nb_threads :
+// total est partagé équitablement, et le thread 0 récupère le reste de la division.
+static int part(int i, int nb_threads, int total) {
+    return total / nb_threads + (i == 0 ? total % nb_threads : 0);
+}
 
 // Simule un traitement qui utilise le CPU (boucle imposée par l'énoncé).
 static void traitement(void) {

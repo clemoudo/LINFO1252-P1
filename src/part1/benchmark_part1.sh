@@ -3,6 +3,11 @@
 # Arrête le script en cas d'erreur ou d'utilisation d'une variable non définie
 set -euo pipefail
 
+# Positionnement à la racine du projet
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$ROOT_DIR"
+
 # --- Configuration et constantes ---
 CONFIGS=(2 4 8 16 32)
 REPETITIONS=5
@@ -61,19 +66,19 @@ case "$TARGET" in
     philosophes)
         benchmark "philosophes"
         ;;
-    prodcons)
-        benchmark "prodcons"
+    producer_consumer|prodcons)
+        benchmark "producer_consumer"
         ;;
-    read-write)
-        benchmark "read-write"
+    reader_writer|read-write)
+        benchmark "reader_writer"
         ;;
     all)
         benchmark "philosophes"
-        benchmark "prodcons"
-        benchmark "read-write"
+        benchmark "producer_consumer"
+        benchmark "reader_writer"
         ;;
     *)
-        echo "Usage: $0 [philosophes|prodcons|read-write|all]" >&2
+        echo "Usage: $0 [philosophes|producer_consumer|reader_writer|all]" >&2
         exit 1
         ;;
 esac
